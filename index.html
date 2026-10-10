@@ -262,6 +262,10 @@ details.names summary::-webkit-details-marker { display: none; }
 .tip-mark.up { top: 0; } .tip-mark.down { top: 58px; flex-direction: column-reverse; }
 .tip-mark.up::after, .tip-mark.down::before { content: ""; width: 3px; height: 8px; background: var(--line); }
 .tb-right { display: flex; align-items: center; gap: 6px; }
+.tb-left { display: flex; align-items: center; gap: 6px; }
+.redo-btn { position: relative; overflow: hidden; height: 44px; min-width: 44px; padding: 0 5px; border-radius: 14px; border: 2px solid var(--line); background: var(--surface); box-shadow: 0 3px 0 var(--line); font-size: 17px; font-weight: 900; line-height: 1; cursor: pointer; display: flex; flex-direction: column; align-items: center; justify-content: center; gap: 1px; color: var(--text); white-space: nowrap; }
+.redo-btn small { font-size: 11px; letter-spacing: -.06em; }
+.redo-btn:active { transform: translateY(2px); box-shadow: 0 1px 0 var(--line); }
 .icon-btn.sm { width: 40px; height: 40px; font-size: 18px; }
 .title-sound { position: absolute; top: calc(8px + env(safe-area-inset-top)); right: 12px; z-index: 5; }
 
@@ -360,7 +364,7 @@ details.names summary::-webkit-details-marker { display: none; }
 
 /* ---------- 何枚目バッジ ---------- */
 .kb { display: inline-flex; align-items: baseline; gap: 1px; font-weight: 900; font-size: 14px; line-height: 1; color: #fff; padding: 3px 8px; border-radius: 999px; border: 2px solid #fff; box-shadow: 0 2px 6px rgba(0,0,0,.25); white-space: nowrap; }
-.kb small { font-size: 10px; }
+.kb small { font-size: 11px; }
 .kb1 { background: #1e88e5; } .kb2 { background: #f57c00; } .kb3 { background: #8e24aa; }
 .tcard .tc-k { position: absolute; bottom: -12px; left: 50%; transform: translateX(-50%); z-index: 2; }
 .tcard .tc-nm { margin-bottom: 6px; }
@@ -426,7 +430,7 @@ body.quake #app { animation: quake .55s ease; }
 :root[data-theme="dark"] .topic-card.adult { background: linear-gradient(170deg, var(--surface), #4a1f3a); }
 .topic-card.adult .topic-ribbon { background: #c2185b; box-shadow: 0 4px 0 #880e4f; }
 .topic-ribbon { position: absolute; top: -18px; left: 50%; transform: translateX(-50%); background: var(--red); color: #fff; font-weight: 900; padding: 6px 22px; border-radius: 999px; box-shadow: 0 4px 0 var(--red-d); font-size: 16px; white-space: nowrap; }
-.topic-title { font-size: 30px; font-weight: 900; line-height: 1.35; word-break: auto-phrase; }
+.topic-title { font-size: 20px; font-weight: 900; line-height: 1.35; word-break: auto-phrase; }
 .scale { margin-top: 16px; }
 .scale-bar { height: 14px; border-radius: 999px; background: linear-gradient(90deg, var(--blue), var(--yellow), var(--red)); position: relative; }
 .scale-ends { display: flex; justify-content: space-between; gap: 10px; margin-top: 8px; }
@@ -535,7 +539,7 @@ body.quake #app { animation: quake .55s ease; }
 .tcard .tc-av { font-size: 34px; line-height: 1; }
 .tcard .tc-nm { font-size: 11px; font-weight: 900; background: var(--pc); color: #fff; border-radius: 999px; padding: 2px 8px; max-width: 72px; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
 .tcard .tc-num { position: absolute; top: -10px; left: -8px; z-index: 2; min-width: 26px; text-align: center; font-size: 14px; font-weight: 900; color: #fff; background: var(--pc); border: 2px solid #fff; border-radius: 999px; padding: 1px 6px; }
-.tcard .tc-you { position: absolute; top: -10px; right: -8px; background: var(--yellow); color: #3d2b1f; font-size: 10px; font-weight: 900; padding: 2px 7px; border-radius: 999px; border: 2px solid #fff; }
+.tcard .tc-you { position: absolute; top: -10px; right: -8px; background: var(--yellow); color: #3d2b1f; font-size: 11px; font-weight: 900; padding: 2px 7px; border-radius: 999px; border: 2px solid #fff; }
 .tcard.mine { cursor: grab; }
 .tcard.sel { transform: translateY(-10px) scale(1.05); box-shadow: 0 0 0 4px var(--yellow), 0 14px 22px rgba(0,0,0,.35); }
 .tcard.new { animation: dropIn .45s cubic-bezier(.3, 1.5, .5, 1); }
@@ -617,9 +621,14 @@ body.quake #app { animation: quake .55s ease; }
 .rwrap.ng .res-mark { background: var(--ng); transform: scale(1); }
 .rwrap.ng .face-front-side { border-color: var(--ng); }
 .rwrap.ng .rcard { animation: shake .45s ease; }
-.answer-chips { display: flex; flex-wrap: wrap; gap: 6px; justify-content: center; }
-.answer-chip { background: var(--surface-2); border-left: 6px solid var(--pc); border-radius: 10px; padding: 4px 10px; font-weight: 800; font-size: 15px; }
-.answer-chip b { font-size: 18px; margin-right: 4px; }
+.answer-chips { display: flex; flex-direction: column; gap: 8px; }
+.answer-row { display: flex; align-items: center; gap: 10px; background: var(--surface-2); border-left: 6px solid var(--pc); border-radius: 12px; padding: 8px 12px; font-weight: 800; font-size: 16px; }
+.answer-row .ar-rank { flex: 0 0 auto; width: 26px; text-align: center; font-size: 13px; font-weight: 900; color: var(--muted); }
+.answer-row .ar-num { flex: 0 0 auto; min-width: 46px; text-align: center; font-size: 20px; font-weight: 900; color: #fff; background: hsl(var(--h) 70% 48%); border-radius: 10px; padding: 2px 6px; }
+.answer-row .ar-who { flex: 1; min-width: 0; display: flex; align-items: center; gap: 6px; }
+.answer-row .ar-who span { white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+.answer-row .ar-hint { flex: 0 1 auto; max-width: 40%; font-size: 13px; color: var(--muted); white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+.answer-row .kb { flex: 0 0 auto; font-size: 12px; padding: 2px 6px; }
 .confetti { position: fixed; top: -20px; width: 10px; height: 16px; z-index: 1059; pointer-events: none; animation: fall linear forwards; border-radius: 2px; }
 @keyframes fall { to { transform: translateY(110vh) rotate(720deg); } }
 
@@ -991,7 +1000,10 @@ body.quake #app { animation: quake .55s ease; }
   <!-- ================= プレイ(場に並べる) ================= -->
   <section class="screen" id="screen-play">
     <div class="topbar">
-      <button class="icon-btn js-home" aria-label="タイトルへ"><svg viewBox="0 0 24 24"><path d="M3 11l9-7 9 7"/><path d="M5 10v10h14V10"/></svg></button>
+      <div class="tb-left">
+        <button class="icon-btn js-home" aria-label="タイトルへ"><svg viewBox="0 0 24 24"><path d="M3 11l9-7 9 7"/><path d="M5 10v10h14V10"/></svg></button>
+        <button class="redo-btn" id="btn-redo" hidden aria-label="お題選びからやり直す">↺<small>やり直し</small></button>
+      </div>
       <div class="round-label js-round"></div>
       <div class="tb-right"><div class="lives js-lives"></div><button class="icon-btn sm js-sound" aria-label="音のオン/オフ">🔊</button></div>
     </div>
@@ -1478,6 +1490,13 @@ function act(pid, a) {
     case 'cards':
       if (!isHost || !['lobby', 'topic'].includes(G.phase) || ![1, 2, 3].includes(a.value)) return;
       G.settings.cardsPerPlayer = a.value;
+      break;
+    case 'redo':
+      // 配り直し:全員をお題選びの画面へ戻す
+      if (!isHost || !['play', 'check'].includes(G.phase)) return;
+      G.cards = []; G.table = []; G.result = null;
+      G.players.forEach((p) => (p.ready = false));
+      G.phase = 'topic';
       break;
     case 'profile': {
       if (G.phase !== 'lobby') return;
@@ -2224,6 +2243,7 @@ function renderPlay(v) {
   chips.push(s.onomatopoeia ? '💥 擬音だけで表現' : '💡 お題に沿った例えで');
   if (s.reverse) chips.push('🔄 大きい順に並べる');
   $('play-rules').innerHTML = chips.map((c) => `<span class="rule-chip">${c}</span>`).join('');
+  $('btn-redo').hidden = !v.isHost;
   $('ready-chips').innerHTML = v.local ? '' : v.players.map((p) => `<div class="rchip ${p.ready ? 'ok' : ''} ${p.online ? '' : 'off'}" style="--pc:${p.color}" title="${esc(p.name)}">${p.avatar}</div>`).join('');
   renderBoard(v);
   renderHand(v);
@@ -2390,6 +2410,10 @@ $('screen-play').addEventListener('click', (e) => {
   const r = t.closest('[data-react]'); if (r) sendReact(r.dataset.react);
 });
 $('board-scroll').addEventListener('scroll', updateBoardNav, { passive: true });
+$('btn-redo').addEventListener('click', async () => {
+  const msg = V && V.local ? 'カードを配り直して、お題選びに戻ります' : '全員のカードを配り直して、お題選びの画面に戻ります';
+  if (await confirmModal('↺ やり直す?', msg, 'やり直す')) send({ type: 'redo' });
+});
 $('tmini').addEventListener('click', () => { if ($('tm-ex-btn').hidden) return; ui.exOpen = !ui.exOpen; Sound.play('pop'); renderPlay(V); });
 $('topic-card').addEventListener('click', (e) => {
   const b = e.target.closest('[data-ex-toggle]'); if (!b) return;
@@ -2560,7 +2584,14 @@ function finishReveal(token) {
     banner.classList.remove('shake'); void banner.offsetWidth; banner.classList.add('shake');
     Sound.play('fail'); duckBgm(2500);
     const sorted = v.cards.slice().sort((a, b) => v.settings.reverse ? b.num - a.num : a.num - b.num);
-    $('answer-chips').innerHTML = sorted.map((c) => { const p = playerOf(v, c.owner); return `<span class="answer-chip" style="--pc:${p.color}"><b>${c.num}</b>${p.avatar}${esc(p.name)}</span>`; }).join('');
+    const many = v.settings.cardsPerPlayer > 1;
+    $('answer-chips').innerHTML = sorted.map((c, i) => {
+      const p = playerOf(v, c.owner);
+      return `<div class="answer-row" style="--pc:${p.color};--h:${Math.round(hueOf(c.num))}">
+        <span class="ar-rank">${i + 1}</span><span class="ar-num">${c.num}</span>
+        <span class="ar-who">${p.avatar}<span>${esc(p.name)}</span>${many ? kBadge(c.k, '') : ''}</span>
+        ${c.hint ? `<span class="ar-hint">「${esc(c.hint)}」</span>` : ''}</div>`;
+    }).join('');
     $('answer').hidden = false;
   }
   const st = v.stats;
@@ -2709,7 +2740,7 @@ function applyTheme() {
 document.addEventListener('pointerdown', (e) => {
   Sound.init();
   if (ui.settings.bgm && bgmEl() && bgmEl().paused) syncBgm();
-  const b = e.target.closest('.btn, .icon-btn, .step-btn, .seg button');
+  const b = e.target.closest('.btn, .icon-btn, .step-btn, .seg button, .redo-btn');
   if (!b || b.disabled) return;
   if (!b.classList.contains('react-btn')) Sound.play('tap');
   const r = b.getBoundingClientRect(); const size = Math.max(r.width, r.height);

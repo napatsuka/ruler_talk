@@ -395,6 +395,9 @@ body.quake #app { animation: quake .55s ease; }
 @keyframes cardHop { 0%, 100% { transform: none; } 40% { transform: translateY(-22px) rotate(-4deg); } }
 .emoji-rain { position: fixed; top: -60px; z-index: 1060; pointer-events: none; animation: fall linear forwards; }
 
+/* 自分のカード・手札の上ではスクロールさせない(指で動かすとカードが動く) */
+#screen-play .tcard.mine, #screen-play .hflip, #screen-play .lc-back { touch-action: none; }
+
 /* =========================================================
    お題カード
    ========================================================= */
@@ -990,7 +993,7 @@ body.quake #app { animation: quake .55s ease; }
         <button class="board-nav l" data-nav="-1" aria-label="左へスライド" hidden>‹</button>
         <button class="board-nav r" data-nav="1" aria-label="右へスライド" hidden>›</button>
       </div>
-      <div class="hand-title"><span id="hand-title">あなたのカード</span><span class="note" style="margin:0" id="hand-tip">長押しでドラッグもできるよ</span></div>
+      <div class="hand-title"><span id="hand-title">あなたのカード</span><span class="note" style="margin:0" id="hand-tip">カードを指で動かして置けるよ</span></div>
       <div class="hand" id="hand"></div>
     </div>
     <div class="screen-foot">
@@ -2376,18 +2379,20 @@ const dragS = { pending: null, active: false, id: null, ghost: null, timer: 0, x
 $('screen-play').addEventListener('pointerdown', (e) => {
   if (!V || V.phase !== 'play' || dragS.active) return;
   if (e.target.closest('input, button')) return;
-  const el = e.target.closest('.tcard.mine, .lcard, .hcard');
+  // つかめるのは「自分の場のカード」「手札のカード絵柄」だけ(ここはスクロールしない設定)
+  const grip = e.target.closest('.tcard.mine, .lc-back, .hflip');
+  if (!grip) return;
+  const el = grip.closest('[data-id]');
   if (!el) return;
   if (el.classList.contains('hcard') && V.table.includes(el.dataset.id)) return;
-  dragS.pending = { id: el.dataset.id, x: e.clientX, y: e.clientY, type: e.pointerType };
-  if (e.pointerType !== 'mouse') dragS.timer = setTimeout(() => dragS.pending && beginDrag(dragS.pending.x, dragS.pending.y), 300);
+  dragS.pending = { id: el.dataset.id, x: e.clientX, y: e.clientY, type: e.pointerType, pointerId: e.pointerId };
 });
 window.addEventListener('pointermove', (e) => {
   if (dragS.active) { dragS.x = e.clientX; dragS.y = e.clientY; moveDrag(); return; }
   const p = dragS.pending; if (!p) return;
+  // 指でもマウスでも、少し動かしたらすぐドラッグ開始(タップならめくる/選ぶ)
   const d = Math.hypot(e.clientX - p.x, e.clientY - p.y);
-  if (p.type === 'mouse' && d > 6) beginDrag(e.clientX, e.clientY);
-  else if (p.type !== 'mouse' && d > 10) cancelPending(); // スクロールとみなす
+  if (d > (p.type === 'mouse' ? 6 : 8)) beginDrag(e.clientX, e.clientY);
 });
 window.addEventListener('pointerup', () => { if (dragS.active) endDrag(true); cancelPending(); });
 window.addEventListener('pointercancel', () => { if (dragS.active) endDrag(false); cancelPending(); });
@@ -2398,6 +2403,8 @@ function cancelPending() { clearTimeout(dragS.timer); dragS.pending = null; }
 function beginDrag(x, y) {
   const p = dragS.pending; cancelPending(); if (!p || !V) return;
   dragS.active = true; dragS.id = p.id; dragS.x = x; dragS.y = y;
+  // 描き直しでカードの要素が消えても指の動きを追えるよう、画面全体で指をつかまえる
+  try { $('screen-play').setPointerCapture(p.pointerId); } catch (err) {}
   ui.sel = p.id;
   renderPlay(V);
   const c = cardOf(V, p.id); const pl = playerOf(V, c.owner);

@@ -624,9 +624,11 @@ body.quake #app { animation: quake .55s ease; }
 .answer-row { display: flex; align-items: center; gap: 10px; background: var(--surface-2); border-left: 6px solid var(--pc); border-radius: 12px; padding: 8px 12px; font-weight: 800; font-size: 16px; }
 .answer-row .ar-rank { flex: 0 0 auto; width: 26px; text-align: center; font-size: 13px; font-weight: 900; color: var(--muted); }
 .answer-row .ar-num { flex: 0 0 auto; min-width: 46px; text-align: center; font-size: 20px; font-weight: 900; color: #fff; background: hsl(var(--h) 70% 48%); border-radius: 10px; padding: 2px 6px; }
-.answer-row .ar-who { flex: 1; min-width: 0; display: flex; align-items: center; gap: 6px; }
-.answer-row .ar-who span { white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
-.answer-row .ar-hint { flex: 0 1 auto; max-width: 40%; font-size: 13px; color: var(--muted); white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+.answer-row .ar-who { flex: 1; min-width: 0; display: flex; flex-direction: column; gap: 3px; }
+.answer-row .ar-name { white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+.answer-row .ar-sub { display: flex; align-items: center; gap: 6px; min-width: 0; }
+.answer-row .ar-hint { min-width: 0; font-size: 13px; color: var(--muted); white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+.secret-btn { display: block; margin: 14px auto 0; border: 2px dashed var(--line); background: transparent; color: var(--muted); font-weight: 900; font-size: 13px; padding: 6px 16px; border-radius: 999px; cursor: pointer; }
 .answer-row .kb { flex: 0 0 auto; font-size: 12px; padding: 2px 6px; }
 .confetti { position: fixed; top: -20px; width: 10px; height: 16px; z-index: 1059; pointer-events: none; animation: fall linear forwards; border-radius: 2px; }
 @keyframes fall { to { transform: translateY(110vh) rotate(720deg); } }
@@ -933,7 +935,8 @@ body.quake #app { animation: quake .55s ease; }
         <div class="setting-text"><b>🃏 1人に配る枚数</b><span id="cards-note">枚数を増やすと難易度アップ!</span></div>
         <div class="seg" id="topic-cards"></div>
       </div>
-      <div class="panel">
+      <button class="secret-btn" id="btn-secret">🤫 シークレット</button>
+      <div class="panel" id="adult-panel" hidden>
         <div class="setting" style="padding:2px 0">
           <div class="setting-text"><b>🔞 アダルトモード</b><span id="adult-note">大人向けのお題に全部切り替わります</span></div>
           <label class="switch"><input type="checkbox" id="set-adult"><span class="slider"></span></label>
@@ -1894,6 +1897,7 @@ function goTitle() {
   ui.revealing = false;
   ui.lastResultId = null;
   ui.lastTopic = null;
+  ui.secretOpen = false;
   introToken++; $('dealfx').hidden = true; $('dealfx').innerHTML = '';
   clearTimeout(ui.celebTimer); $('celebrate').hidden = true; $('celebrate').innerHTML = '';
   G = null; V = null;
@@ -2081,6 +2085,10 @@ function renderTopic(v, prev) {
   const seg = $('topic-cards');
   seg.innerHTML = [1, 2, 3].map((n) => `<button data-cards="${n}" class="${v.settings.cardsPerPlayer === n ? 'on' : ''}" ${v.isHost ? '' : 'disabled'}>${n}枚</button>`).join('');
   $('cards-note').textContent = v.isHost ? '枚数を増やすと難易度アップ!' : 'ホストが選びます';
+  // アダルトモードは「シークレット」を押すまで隠す(ONのときは常に表示)
+  const showAdult = ui.secretOpen || !!v.settings.adult;
+  $('adult-panel').hidden = !showAdult;
+  $('btn-secret').hidden = showAdult || !v.isHost;
   // アダルトモード切り替え(ホストだけ操作できる)
   const sw = $('set-adult');
   sw.checked = !!v.settings.adult;
@@ -2265,7 +2273,7 @@ function renderBoard(v) {
       const isNew = !ui.prevTable.includes(c.id);
       html += `<div class="tcard ${mine ? 'mine' : ''} ${ui.sel === c.id ? 'sel' : ''} ${i % 2 ? 'alt' : ''} ${isNew ? 'new' : ''}" data-id="${c.id}" style="--pc:${p.color}">
         ${c.hint ? `<div class="bubble">${esc(c.hint)}</div>` : ''}
-        ${!v.local && c.owner === v.me && c.num != null ? `<div class="tc-num">${c.num}</div><div class="tc-you">YOU</div>` : ''}
+        ${!v.local && c.owner === v.me ? `${c.num != null && ui.revealOwn[c.id] ? `<div class="tc-num">${c.num}</div>` : ''}<div class="tc-you">YOU</div>` : ''}
         <div class="tc-av">${p.avatar}</div><div class="tc-nm">${esc(p.name)}</div>${two ? kBadge(c.k, 'tc-k') : ''}</div>`;
     }
   }
@@ -2393,7 +2401,7 @@ $('screen-play').addEventListener('click', (e) => {
   const put = t.closest('[data-put]'); if (put) { selectCard(put.dataset.put); return; }
   const back = t.closest('[data-back]'); if (back) { if (ui.sel === back.dataset.back) ui.sel = null; send({ type: 'unplace', cardId: back.dataset.back }); return; }
   const flip = t.closest('[data-flip]');
-  if (flip) { const id = flip.dataset.flip; ui.revealOwn[id] = !ui.revealOwn[id]; flip.classList.toggle('flipped', ui.revealOwn[id]); vibrate(10); Sound.play('flip'); return; }
+  if (flip) { const id = flip.dataset.flip; ui.revealOwn[id] = !ui.revealOwn[id]; flip.classList.toggle('flipped', ui.revealOwn[id]); vibrate(10); Sound.play('flip'); renderBoard(V); return; }
   const tc = t.closest('.tcard.mine'); if (tc) { selectCard(tc.dataset.id); return; }
   const nav = t.closest('[data-nav]'); if (nav) { slideBoard(Number(nav.dataset.nav)); return; }
   // ほかの人のカード → 真ん中に寄せて、例えを全部見せる
@@ -2589,8 +2597,7 @@ function finishReveal(token) {
       const p = playerOf(v, c.owner);
       return `<div class="answer-row" style="--pc:${p.color};--h:${Math.round(hueOf(c.num))}">
         <span class="ar-rank">${i + 1}</span><span class="ar-num">${c.num}</span>
-        <span class="ar-who">${p.avatar}<span>${esc(p.name)}</span>${many ? kBadge(c.k, '') : ''}</span>
-        ${c.hint ? `<span class="ar-hint">「${esc(c.hint)}」</span>` : ''}</div>`;
+        <span class="ar-who"><span class="ar-name">${p.avatar} ${esc(p.name)}</span>${many || c.hint ? `<span class="ar-sub">${many ? kBadge(c.k, '') : ''}${c.hint ? `<span class="ar-hint">「${esc(c.hint)}」</span>` : ''}</span>` : ''}</span></div>`;
     }).join('');
     $('answer').hidden = false;
   }
@@ -2780,6 +2787,7 @@ $('btn-profile').addEventListener('click', editMyProfile);
 $('plist').addEventListener('click', (e) => { if (e.target.closest('.pl.me')) editMyProfile(); });
 $('btn-my-icon').addEventListener('click', editTitleProfile);
 $('set-adult').addEventListener('change', toggleAdult);
+$('btn-secret').addEventListener('click', () => { ui.secretOpen = true; Sound.play('pop'); if (V) renderTopic(V, V); });
 $('topic-cards').addEventListener('click', (e) => {
   const b = e.target.closest('[data-cards]'); if (!b || b.disabled) return;
   const n = Number(b.dataset.cards);

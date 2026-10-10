@@ -363,7 +363,7 @@ details.names summary::-webkit-details-marker { display: none; }
 .tcard .tc-k { position: absolute; bottom: -12px; left: 50%; transform: translateX(-50%); z-index: 2; }
 .tcard .tc-nm { margin-bottom: 6px; }
 .lcard .lc-k { align-self: center; margin-top: -2px; }
-.hflip .h-k { position: absolute; top: -8px; left: -6px; z-index: 3; font-size: 15px; }
+.hflip .h-k { position: absolute; top: -8px; left: 2px; z-index: 3; font-size: 15px; }
 .rwrap .rc-k { margin-top: -2px; }
 .drag-ghost small + small { color: #fff; background: #3d2b1f; border-radius: 999px; padding: 0 6px; margin-top: 2px; }
 .board-scroll { padding-bottom: 18px; }
@@ -543,11 +543,15 @@ body.quake #app { animation: quake .55s ease; }
 @keyframes slotPulse { 50% { background: rgba(255,255,255,.12); } }
 
 .hand-title { font-weight: 900; font-size: 16px; margin: 16px 0 4px; display: flex; justify-content: space-between; align-items: center; }
-.hand { display: flex; gap: 12px; overflow-x: auto; padding: 8px 2px 12px; }
+.hand { display: flex; gap: 10px; overflow-x: auto; padding: 10px 2px 12px; }
+.hand > :first-child { margin-left: auto; }
+.hand > :last-child { margin-right: auto; }
 .hand-empty { flex: 1; text-align: center; font-weight: 800; color: var(--muted); padding: 18px 8px; border: 3px dashed var(--line); border-radius: 18px; }
 /* オンライン:自分の手札 */
-.hcard { flex: 0 0 136px; display: flex; flex-direction: column; gap: 8px; }
-.hflip { width: 136px; height: 150px; position: relative; touch-action: manipulation; }
+.hcard { flex: 1 1 0; min-width: 0; max-width: 136px; display: flex; flex-direction: column; gap: 8px; }
+.hflip { width: 100%; aspect-ratio: 136 / 150; position: relative; touch-action: manipulation; }
+.hcard .btn-xs { padding: 6px 4px; font-size: 14px; }
+.hcard .hint-in { padding: 7px 8px; font-size: 16px; }
 .hflip .num-big { font-size: 74px; }
 .hcard.placed .hflip { opacity: .55; }
 .hcard.sel .hflip { transform: translateY(-6px); }
@@ -2207,10 +2211,9 @@ function renderPlay(v) {
   $('tm-hi').textContent = `100:${v.topic.high}`;
   // 例はタップしたときだけ表示(お題が変わったら閉じる)
   if (ui.exTopic !== v.topic.title) { ui.exTopic = v.topic.title; ui.exOpen = false; }
-  $('tm-ex-btn').hidden = !ex;
-  $('tm-ex-btn').textContent = ui.exOpen ? '例を閉じる' : '💡 例を見る';
-  $('tm-ex').hidden = !(ex && ui.exOpen);
-  if (ex) $('tm-ex').innerHTML = `<span class="ex lo">例)${esc(ex[0])}</span><span class="ex hi">例)${esc(ex[1])}</span>`;
+  // 場に出す画面では例は表示しない(画面を広く使う)
+  $('tm-ex-btn').hidden = true;
+  $('tm-ex').hidden = true;
   const chips = ['🤫 数字は言わない'];
   chips.push(s.onomatopoeia ? '💥 擬音だけで表現' : '💡 お題に沿った例えで');
   if (s.reverse) chips.push('🔄 大きい順に並べる');

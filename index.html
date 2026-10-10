@@ -2,7 +2,7 @@
 <html lang="ja" data-theme="auto">
 <head>
 <meta charset="UTF-8">
-<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1, user-scalable=no, viewport-fit=cover">
 <meta name="theme-color" content="#fff4e4">
 <title>ものさしTalk - 価値観合わせゲーム</title>
 <meta name="description" content="お題に対するみんなの“ものさし(価値観)”をすり合わせる協力型パーティーゲーム">
@@ -65,7 +65,9 @@ body {
   -webkit-touch-callout: none;
   overscroll-behavior: none;
 }
-input { -webkit-user-select: text; user-select: text; font-family: inherit; }
+input { -webkit-user-select: text; user-select: text; font-family: inherit; font-size: 16px; }
+/* ダブルタップでの拡大を防ぐ */
+html, body { touch-action: manipulation; -webkit-text-size-adjust: 100%; text-size-adjust: 100%; }
 button { font-family: inherit; color: inherit; }
 [hidden] { display: none !important; }
 
@@ -111,7 +113,7 @@ button { font-family: inherit; color: inherit; }
   display: flex; flex-direction: column; gap: 10px;
   background: linear-gradient(to top, var(--bg) 78%, transparent);
 }
-.topbar { display: flex; align-items: center; justify-content: space-between; gap: 8px; padding: calc(10px + env(safe-area-inset-top)) 16px 4px; min-height: 62px; }
+.topbar { display: grid; grid-template-columns: 1fr auto 1fr; align-items: center; gap: 8px; padding: calc(10px + env(safe-area-inset-top)) 16px 4px; min-height: 62px; }
 .topbar .title-sm { font-weight: 900; font-size: 20px; }
 .round-label { font-weight: 900; font-size: 16px; background: var(--yellow); color: #3d2b1f; padding: 4px 14px; border-radius: 999px; box-shadow: 0 3px 0 var(--yellow-d); }
 .lives { display: flex; gap: 2px; min-width: 48px; justify-content: flex-end; font-size: 24px; }
@@ -409,6 +411,10 @@ body.quake #app { animation: quake .55s ease; }
 .ex-toggle { display: block; margin: 6px auto 0; border: 2px dashed var(--line); background: var(--surface-2); color: var(--text); font-weight: 900; font-size: 13px; padding: 4px 14px; border-radius: 999px; cursor: pointer; }
 .tmini .ex-row { margin-top: 6px; }
 .tmini .ex { font-size: 12px; padding: 4px 8px; }
+
+.topbar > :first-child { justify-self: start; }
+.topbar > :last-child { justify-self: end; }
+#play-actions .rchips { margin: 4px 0 8px; }
 
 /* =========================================================
    お題カード
@@ -997,7 +1003,6 @@ body.quake #app { animation: quake .55s ease; }
         <button class="ex-toggle" id="tm-ex-btn" hidden>💡 例を見る</button>
       </div>
       <div class="rule-chips" id="play-rules"></div>
-      <div class="rchips" id="ready-chips"></div>
       <div class="board" id="board">
         <svg class="board-squiggle" viewBox="0 0 300 200" preserveAspectRatio="none" aria-hidden="true">
           <path d="M10,30 c20,-20 40,20 60,0 s40,-20 60,0" stroke="#ff8a8a"/>
@@ -1028,6 +1033,7 @@ body.quake #app { animation: quake .55s ease; }
         </div>
       </div>
       <div id="play-actions">
+        <div class="rchips" id="ready-chips"></div>
         <div class="play-status" id="play-status"></div>
         <button class="btn btn-red play-btn" id="btn-ready">準備OK!</button>
         <button class="btn btn-red play-btn" id="btn-open">この順でオープン!</button>
@@ -1150,13 +1156,13 @@ body.quake #app { animation: quake .55s ease; }
   { "title": "付き合う前にされたらドキッとする行動", "low": "何も感じない", "high": "心臓が止まる", "ex": "低:目が合う / 高:急に手を握られる" },
   { "title": "恋人に言われて嬉しいセリフ", "low": "ちょっと嬉しい", "high": "泣くほど嬉しい", "ex": "低:おつかれさま / 高:一生そばにいてほしい" },
   { "title": "二人きりだと意識してしまう場所", "low": "全然意識しない", "high": "息が止まりそう", "ex": "低:公園のベンチ / 高:夜の車の中" },
-  { "title": "浮気しそうな職業", "low": "しなさそう", "high": "絶対しそう", "ex": "低:お坊さん / 高:ホスト" },
+  { "title": "性の失敗", "low": "笑って済む", "high": "二度と会えない", "ex": "低:ベッドが軋んで大笑い / 高:名前を呼び間違えて空気が凍る" },
   { "title": "色気を感じる仕草", "low": "何も感じない", "high": "目が離せない", "ex": "低:あくびをする / 高:ネクタイをゆるめる" },
   { "title": "初デートでやったら引かれる行動", "low": "笑って許せる", "high": "二度と会いたくない", "ex": "低:少し遅刻 / 高:元恋人の悪口を2時間" },
   { "title": "初デートで選ぶと失敗しそうな食べ物", "low": "全く問題ない", "high": "確実に失敗", "ex": "低:コーヒー / 高:ニンニク全のせラーメン" },
   { "title": "恋人にもらって重いと感じるプレゼント", "low": "嬉しい", "high": "反応に困る", "ex": "低:お菓子 / 高:合鍵つきの手紙" },
   { "title": "恋人の家で見つけたら固まるもの", "low": "ちょっと驚く", "high": "言葉を失う", "ex": "低:歯ブラシが2本 / 高:知らない人のペアのマグカップ" },
-  { "title": "ケンカの原因の重さ", "low": "笑える", "high": "別れ話になる", "ex": "低:歯磨き粉の出し方 / 高:浮気の疑い" },
+  { "title": "ドン引きする性癖", "low": "ちょっとこだわりが強い", "high": "人に言えないレベル", "ex": "低:手や髪の毛が好き / 高:毎回、細かい設定の衣装を用意させる" },
   { "title": "別れを考える理由の重さ", "low": "我慢できる", "high": "決定的", "ex": "低:いびきがうるさい / 高:嘘が何度もバレた" },
   { "title": "付き合い始めの呼び方の恥ずかしさ", "low": "普通", "high": "穴があったら入りたい", "ex": "低:苗字にさん / 高:ダーリン・ハニー" },
   { "title": "結婚式の演出の恥ずかしさ", "low": "普通", "high": "見ていられない", "ex": "低:乾杯 / 高:新郎新婦のダンス" },
@@ -1165,7 +1171,7 @@ body.quake #app { animation: quake .55s ease; }
   { "title": "恋人の友達に言われて刺さる一言", "low": "気にならない", "high": "ずっと引きずる", "ex": "低:仲いいね / 高:前の彼女の方が良かった" },
   { "title": "年上にされたらときめくこと", "low": "普通", "high": "即落ちる", "ex": "低:ごはんをおごってくれる / 高:耳元で名前を呼ばれる" },
   { "title": "年下にされたらときめくこと", "low": "普通", "high": "即落ちる", "ex": "低:荷物を持ってくれる / 高:真剣な顔で好きと言われる" },
-  { "title": "酔ったときにやりがちな行動", "low": "かわいい", "high": "翌朝後悔", "ex": "低:同じ話を繰り返す / 高:元恋人に電話" },
+  { "title": "行為中に言われたい言葉", "low": "ちょっと嬉しい", "high": "腰が抜ける", "ex": "低:名前を呼んでくれる / 高:耳元で「離したくない」とささやく" },
   { "title": "気がある相手に送るLINEの攻め具合", "low": "探り程度", "high": "ほぼ告白", "ex": "低:おはよう / 高:今から会いたい" },
   { "title": "夜中に送ると後悔するメッセージ", "low": "かわいい", "high": "翌朝消したい", "ex": "低:おやすみ / 高:ずっと好きだった" },
   { "title": "関係が進展しそうな誘い", "low": "全く進展しない", "high": "一気に近づく", "ex": "低:ランチ / 高:週末の旅行" },
@@ -1196,7 +1202,7 @@ body.quake #app { animation: quake .55s ease; }
   { "title": "嫉妬してしまう場面", "low": "気にならない", "high": "夜も眠れない", "ex": "低:他の人の話で笑う / 高:異性と二人で旅行" },
   { "title": "記念日のサプライズの派手さ", "low": "控えめ", "high": "一生の思い出", "ex": "低:手紙 / 高:花火を打ち上げる" },
   { "title": "ドキッとする距離感", "low": "遠い", "high": "近すぎる", "ex": "低:隣の席 / 高:息がかかる距離" },
-  { "title": "大人の駆け引きで使いがちな行動", "low": "かわいい", "high": "高度な心理戦", "ex": "低:返信をわざと遅らせる / 高:他の人の話をわざと出す" }
+  { "title": "わざと嫉妬させる行動", "low": "かわいい", "high": "高度な心理戦", "ex": "低:返信をわざと遅らせる / 高:他の人の話をわざと出す" }
 ]
 </script>
 

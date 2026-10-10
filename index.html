@@ -398,6 +398,18 @@ body.quake #app { animation: quake .55s ease; }
 /* 自分のカード・手札の上ではスクロールさせない(指で動かすとカードが動く) */
 #screen-play .tcard.mine, #screen-play .hflip, #screen-play .lc-back { touch-action: none; }
 
+/* ---------- プレイ画面を広く:下部も一緒にスクロール ---------- */
+#screen-play { overflow-y: auto; -webkit-overflow-scrolling: touch; }
+#screen-play .screen-body { flex: none; overflow: visible; padding-bottom: 4px; }
+#screen-play .screen-foot { background: none; padding-top: 4px; }
+#screen-play .screen-foot .btn.play-btn { min-height: 36px; font-size: 16px; margin-top: 6px; padding: 6px 14px; box-shadow: 0 4px 0 var(--red-d); }
+#screen-play .screen-foot .btn.play-btn.btn-ghost { box-shadow: 0 4px 0 var(--line); }
+#screen-play .screen-foot .btn.play-btn small { display: none; }
+.tmini { cursor: pointer; }
+.ex-toggle { display: block; margin: 6px auto 0; border: 2px dashed var(--line); background: var(--surface-2); color: var(--text); font-weight: 900; font-size: 13px; padding: 4px 14px; border-radius: 999px; cursor: pointer; }
+.tmini .ex-row { margin-top: 6px; }
+.tmini .ex { font-size: 12px; padding: 4px 8px; }
+
 /* =========================================================
    お題カード
    ========================================================= */
@@ -974,9 +986,11 @@ body.quake #app { animation: quake .55s ease; }
       <div class="tb-right"><div class="lives js-lives"></div><button class="icon-btn sm js-sound" aria-label="音のオン/オフ">🔊</button></div>
     </div>
     <div class="screen-body" id="play-body">
-      <div class="tmini">
+      <div class="tmini" id="tmini">
         <div class="t js-topic-title"></div>
         <div class="ends"><span class="lo" id="tm-lo"></span><span class="hi" id="tm-hi"></span></div>
+        <div class="ex-row" id="tm-ex" hidden></div>
+        <button class="ex-toggle" id="tm-ex-btn" hidden>💡 例を見る</button>
       </div>
       <div class="rule-chips" id="play-rules"></div>
       <div class="rchips" id="ready-chips"></div>
@@ -1011,8 +1025,8 @@ body.quake #app { animation: quake .55s ease; }
       </div>
       <div id="play-actions">
         <div class="play-status" id="play-status"></div>
-        <button class="btn btn-red" id="btn-ready" style="margin-top:6px">準備OK!</button>
-        <button class="btn btn-red" id="btn-open" style="margin-top:6px">この順でオープン!</button>
+        <button class="btn btn-red play-btn" id="btn-ready">準備OK!</button>
+        <button class="btn btn-red play-btn" id="btn-open">この順でオープン!</button>
       </div>
     </div>
   </section>
@@ -1705,6 +1719,7 @@ function show(name) {
   $$('.screen').forEach((s) => s.classList.remove('active'));
   const el = $('screen-' + name);
   el.classList.add('active');
+  el.scrollTop = 0;
   el.querySelectorAll('.screen-body').forEach((b) => (b.scrollTop = 0));
 }
 const cardOf = (v, id) => v.cards.find((c) => c.id === id);
@@ -2010,7 +2025,7 @@ function parseEx(ex) {
 }
 function exHTML(t) {
   const e = parseEx(t.ex); if (!e) return '';
-  return `<div class="ex-row"><span class="ex lo">例)${esc(e[0])}</span><span class="ex hi">例)${esc(e[1])}</span></div>`;
+  return `<button class="ex-toggle" data-ex-toggle>💡 例を見る</button><div class="ex-row" hidden><span class="ex lo">例)${esc(e[0])}</span><span class="ex hi">例)${esc(e[1])}</span></div>`;
 }
 function setTopicCard(t) {
   $('tc-title').textContent = t.title;
@@ -2188,11 +2203,17 @@ function renderPlay(v) {
   if (ui.sel && !canControl(v, ui.sel)) ui.sel = null;
   const s = v.settings;
   const ex = parseEx(v.topic.ex);
-  $('tm-lo').textContent = `1:${v.topic.low}` + (ex ? `(${ex[0]})` : '');
-  $('tm-hi').textContent = `100:${v.topic.high}` + (ex ? `(${ex[1]})` : '');
+  $('tm-lo').textContent = `1:${v.topic.low}`;
+  $('tm-hi').textContent = `100:${v.topic.high}`;
+  // 例はタップしたときだけ表示(お題が変わったら閉じる)
+  if (ui.exTopic !== v.topic.title) { ui.exTopic = v.topic.title; ui.exOpen = false; }
+  $('tm-ex-btn').hidden = !ex;
+  $('tm-ex-btn').textContent = ui.exOpen ? '例を閉じる' : '💡 例を見る';
+  $('tm-ex').hidden = !(ex && ui.exOpen);
+  if (ex) $('tm-ex').innerHTML = `<span class="ex lo">例)${esc(ex[0])}</span><span class="ex hi">例)${esc(ex[1])}</span>`;
   const chips = ['🤫 数字は言わない'];
   chips.push(s.onomatopoeia ? '💥 擬音だけで表現' : '💡 お題に沿った例えで');
-  chips.push(s.reverse ? '🔄 大きい順に並べる' : '🧵 小さい順に並べる');
+  if (s.reverse) chips.push('🔄 大きい順に並べる');
   $('play-rules').innerHTML = chips.map((c) => `<span class="rule-chip">${c}</span>`).join('');
   $('ready-chips').innerHTML = v.local ? '' : v.players.map((p) => `<div class="rchip ${p.ready ? 'ok' : ''} ${p.online ? '' : 'off'}" style="--pc:${p.color}" title="${esc(p.name)}">${p.avatar}</div>`).join('');
   renderBoard(v);
@@ -2296,7 +2317,7 @@ function renderPlayFoot(v) {
     const me = playerOf(v, v.me);
     const myAll = v.cards.filter((c) => c.owner === v.me).every((c) => v.table.includes(c.id));
     const btn = $('btn-ready'); btn.hidden = false; btn.disabled = !myAll;
-    btn.className = 'btn ' + (me.ready ? 'btn-ghost' : 'btn-red');
+    btn.className = 'btn play-btn ' + (me.ready ? 'btn-ghost' : 'btn-red');
     btn.innerHTML = me.ready ? '準備OKを取り消す' : (myAll ? '準備OK!<small>全員そろうと自動でオープン</small>' : 'カードを場に出してね');
     const on = v.players.filter((p) => p.online);
     $('play-status').textContent = `場:${v.table.length}/${v.cards.length}枚 ・ 準備OK:${on.filter((p) => p.ready).length}/${on.length}人`;
@@ -2360,6 +2381,13 @@ $('screen-play').addEventListener('click', (e) => {
   const r = t.closest('[data-react]'); if (r) sendReact(r.dataset.react);
 });
 $('board-scroll').addEventListener('scroll', updateBoardNav, { passive: true });
+$('tmini').addEventListener('click', () => { if ($('tm-ex-btn').hidden) return; ui.exOpen = !ui.exOpen; Sound.play('pop'); renderPlay(V); });
+$('topic-card').addEventListener('click', (e) => {
+  const b = e.target.closest('[data-ex-toggle]'); if (!b) return;
+  const row = b.nextElementSibling; row.hidden = !row.hidden;
+  b.textContent = row.hidden ? '💡 例を見る' : '例を閉じる';
+  Sound.play('pop');
+});
 window.addEventListener('resize', () => V && V.phase === 'play' && updateBoardNav());
 $('btn-sel-cancel').addEventListener('click', () => { ui.sel = null; renderPlay(V); });
 $('btn-sel-back').addEventListener('click', () => { const id = ui.sel; ui.sel = null; send({ type: 'unplace', cardId: id }); if (Net.mode === 'guest') renderPlay(V); });

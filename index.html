@@ -357,8 +357,8 @@ details.names summary::-webkit-details-marker { display: none; }
 .qr-warn b { display: block; font-size: 15px; margin-bottom: 4px; }
 .qr-warn span { font-size: 13px; font-weight: 700; line-height: 1.5; }
 
-.ex-row { display: flex; justify-content: space-between; gap: 10px; margin-top: 8px; }
-.ex { flex: 1; font-size: 13px; font-weight: 800; padding: 6px 10px; border-radius: 12px; line-height: 1.35; }
+.ex-row { display: flex; flex-direction: column; gap: 4px; margin-top: 8px; }
+.ex { font-size: 12px; font-weight: 800; padding: 4px 10px; border-radius: 10px; line-height: 1.35; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
 .ex.lo { text-align: left; background: color-mix(in srgb, var(--blue) 14%, transparent); }
 .ex.hi { text-align: right; background: color-mix(in srgb, var(--red) 14%, transparent); }
 
@@ -433,9 +433,8 @@ body.quake #app { animation: quake .55s ease; }
 .topic-title { font-size: 20px; font-weight: 900; line-height: 1.35; word-break: auto-phrase; }
 .scale { margin-top: 16px; }
 .scale-bar { height: 14px; border-radius: 999px; background: linear-gradient(90deg, var(--blue), var(--yellow), var(--red)); position: relative; }
-.scale-ends { display: flex; justify-content: space-between; gap: 10px; margin-top: 8px; }
-.scale-end { flex: 1; font-size: 15px; font-weight: 800; line-height: 1.35; }
-.scale-end b { display: block; font-size: 26px; line-height: 1.1; }
+.scale-ends { display: flex; justify-content: space-between; gap: 8px; margin-top: 4px; }
+.scale-end { flex: 1; font-size: 12px; font-weight: 900; line-height: 1.35; }
 .scale-end.lo { text-align: left; color: var(--blue); }
 .scale-end.hi { text-align: right; color: var(--red); }
 .wait-msg { text-align: center; font-weight: 900; font-size: 17px; color: var(--muted); padding: 10px; }
@@ -1791,7 +1790,7 @@ function livesHTML(s, lives) {
 }
 function scaleHTML(t) {
   return `<div class="scale"><div class="scale-bar"></div><div class="scale-ends">
-    <div class="scale-end lo"><b>1</b>${esc(t.low)}</div><div class="scale-end hi"><b>100</b>${esc(t.high)}</div></div></div>`;
+    <div class="scale-end lo">1:${esc(t.low)}</div><div class="scale-end hi">100:${esc(t.high)}</div></div></div>`;
 }
 function badgesHTML(s) {
   let h = '';
@@ -2265,7 +2264,7 @@ function renderBoard(v) {
       const mine = v.local || c.owner === v.me;
       const isNew = !ui.prevTable.includes(c.id);
       html += `<div class="tcard ${mine ? 'mine' : ''} ${ui.sel === c.id ? 'sel' : ''} ${i % 2 ? 'alt' : ''} ${isNew ? 'new' : ''}" data-id="${c.id}" style="--pc:${p.color}">
-        ${c.hint ? `<div class="bubble">「${esc(c.hint)}」</div>` : ''}
+        ${c.hint ? `<div class="bubble">${esc(c.hint)}</div>` : ''}
         ${!v.local && c.owner === v.me && c.num != null ? `<div class="tc-num">${c.num}</div><div class="tc-you">YOU</div>` : ''}
         <div class="tc-av">${p.avatar}</div><div class="tc-nm">${esc(p.name)}</div>${two ? kBadge(c.k, 'tc-k') : ''}</div>`;
     }
@@ -2418,6 +2417,7 @@ $('tmini').addEventListener('click', () => { if ($('tm-ex-btn').hidden) return; 
 $('topic-card').addEventListener('click', (e) => {
   const b = e.target.closest('[data-ex-toggle]'); if (!b) return;
   const row = b.nextElementSibling; row.hidden = !row.hidden;
+  row.querySelectorAll('.ex').forEach((x) => { let f = 12; x.style.fontSize = ''; while (x.scrollWidth > x.clientWidth && f > 11) { f -= .5; x.style.fontSize = f + 'px'; } });
   b.textContent = row.hidden ? '💡 例を見る' : '例を閉じる';
   Sound.play('pop');
 });
@@ -2529,7 +2529,7 @@ function startReveal(v) {
   $('res-row').innerHTML = v.result.order.map((id, i) => {
     const c = cardOf(v, id); const p = playerOf(v, c.owner);
     return `<div class="rwrap ${i % 2 ? 'alt' : ''}" style="--pc:${p.color}">
-      ${c.hint ? `<div class="bubble">「${esc(c.hint)}」</div>` : ''}
+      ${c.hint ? `<div class="bubble">${esc(c.hint)}</div>` : ''}
       <div class="flip rcard"><div class="flip-inner">
         <div class="face face-back-side"><div class="mark"><b>も</b><b>の</b><b>さ</b><b>し</b><small>Talk</small></div></div>
         <div class="face face-front-side">${numFace(c.num)}</div>
